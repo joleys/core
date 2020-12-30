@@ -2,12 +2,7 @@
 from datetime import timedelta
 import json
 
-from homeassistant.components.accuweather.const import (
-    ATTRIBUTION,
-    CONCENTRATION_PARTS_PER_CUBIC_METER,
-    DOMAIN,
-    LENGTH_MILIMETERS,
-)
+from homeassistant.components.accuweather.const import ATTRIBUTION, DOMAIN
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
 from homeassistant.const import (
     ATTR_ATTRIBUTION,
@@ -15,8 +10,10 @@ from homeassistant.const import (
     ATTR_ENTITY_ID,
     ATTR_ICON,
     ATTR_UNIT_OF_MEASUREMENT,
+    CONCENTRATION_PARTS_PER_CUBIC_METER,
     DEVICE_CLASS_TEMPERATURE,
     LENGTH_METERS,
+    LENGTH_MILLIMETERS,
     PERCENTAGE,
     SPEED_KILOMETERS_PER_HOUR,
     STATE_UNAVAILABLE,
@@ -52,7 +49,7 @@ async def test_sensor_without_forecast(hass):
     assert state
     assert state.state == "0.0"
     assert state.attributes.get(ATTR_ATTRIBUTION) == ATTRIBUTION
-    assert state.attributes.get(ATTR_UNIT_OF_MEASUREMENT) == LENGTH_MILIMETERS
+    assert state.attributes.get(ATTR_UNIT_OF_MEASUREMENT) == LENGTH_MILLIMETERS
     assert state.attributes.get(ATTR_ICON) == "mdi:weather-rainy"
     assert state.attributes.get("type") is None
 
@@ -228,6 +225,13 @@ async def test_sensor_enabled_without_forecast(hass):
     registry.async_get_or_create(
         SENSOR_DOMAIN,
         DOMAIN,
+        "0123456-wind",
+        suggested_object_id="home_wind",
+        disabled_by=None,
+    )
+    registry.async_get_or_create(
+        SENSOR_DOMAIN,
+        DOMAIN,
         "0123456-windchilltemperature",
         suggested_object_id="home_wind_chill_temperature",
         disabled_by=None,
@@ -316,6 +320,20 @@ async def test_sensor_enabled_without_forecast(hass):
         suggested_object_id="home_wind_gust_night_0d",
         disabled_by=None,
     )
+    registry.async_get_or_create(
+        SENSOR_DOMAIN,
+        DOMAIN,
+        "0123456-windday-0",
+        suggested_object_id="home_wind_day_0d",
+        disabled_by=None,
+    )
+    registry.async_get_or_create(
+        SENSOR_DOMAIN,
+        DOMAIN,
+        "0123456-windnight-0",
+        suggested_object_id="home_wind_night_0d",
+        disabled_by=None,
+    )
 
     await init_integration(hass, forecast=True)
 
@@ -395,6 +413,17 @@ async def test_sensor_enabled_without_forecast(hass):
     entry = registry.async_get("sensor.home_wind_gust")
     assert entry
     assert entry.unique_id == "0123456-windgust"
+
+    state = hass.states.get("sensor.home_wind")
+    assert state
+    assert state.state == "14.5"
+    assert state.attributes.get(ATTR_ATTRIBUTION) == ATTRIBUTION
+    assert state.attributes.get(ATTR_UNIT_OF_MEASUREMENT) == SPEED_KILOMETERS_PER_HOUR
+    assert state.attributes.get(ATTR_ICON) == "mdi:weather-windy"
+
+    entry = registry.async_get("sensor.home_wind")
+    assert entry
+    assert entry.unique_id == "0123456-wind"
 
     state = hass.states.get("sensor.home_cloud_cover_day_0d")
     assert state
@@ -509,6 +538,30 @@ async def test_sensor_enabled_without_forecast(hass):
     entry = registry.async_get("sensor.home_tree_pollen_0d")
     assert entry
     assert entry.unique_id == "0123456-tree-0"
+
+    state = hass.states.get("sensor.home_wind_day_0d")
+    assert state
+    assert state.state == "13.0"
+    assert state.attributes.get(ATTR_ATTRIBUTION) == ATTRIBUTION
+    assert state.attributes.get(ATTR_UNIT_OF_MEASUREMENT) == SPEED_KILOMETERS_PER_HOUR
+    assert state.attributes.get("direction") == "SSE"
+    assert state.attributes.get(ATTR_ICON) == "mdi:weather-windy"
+
+    entry = registry.async_get("sensor.home_wind_day_0d")
+    assert entry
+    assert entry.unique_id == "0123456-windday-0"
+
+    state = hass.states.get("sensor.home_wind_night_0d")
+    assert state
+    assert state.state == "7.4"
+    assert state.attributes.get(ATTR_ATTRIBUTION) == ATTRIBUTION
+    assert state.attributes.get(ATTR_UNIT_OF_MEASUREMENT) == SPEED_KILOMETERS_PER_HOUR
+    assert state.attributes.get("direction") == "WNW"
+    assert state.attributes.get(ATTR_ICON) == "mdi:weather-windy"
+
+    entry = registry.async_get("sensor.home_wind_night_0d")
+    assert entry
+    assert entry.unique_id == "0123456-windnight-0"
 
     state = hass.states.get("sensor.home_wind_gust_day_0d")
     assert state

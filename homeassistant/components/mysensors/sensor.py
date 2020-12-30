@@ -9,6 +9,7 @@ from homeassistant.const import (
     ENERGY_KILO_WATT_HOUR,
     FREQUENCY_HERTZ,
     LENGTH_METERS,
+    LIGHT_LUX,
     MASS_KILOGRAMS,
     PERCENTAGE,
     POWER_WATT,
@@ -41,7 +42,7 @@ SENSORS = {
     "V_LEVEL": {
         "S_SOUND": ["dB", "mdi:volume-high"],
         "S_VIBRATION": [FREQUENCY_HERTZ, None],
-        "S_LIGHT_LEVEL": ["lx", "mdi:white-balance-sunny"],
+        "S_LIGHT_LEVEL": [LIGHT_LUX, "mdi:white-balance-sunny"],
     },
     "V_VOLTAGE": [VOLT, "mdi:flash"],
     "V_CURRENT": [ELECTRICAL_CURRENT_AMPERE, "mdi:flash-auto"],
@@ -84,7 +85,7 @@ class MySensorsSensor(mysensors.device.MySensorsEntity):
     @property
     def icon(self):
         """Return the icon to use in the frontend, if any."""
-        _, icon = self._get_sensor_type()
+        icon = self._get_sensor_type()[1]
         return icon
 
     @property
@@ -96,7 +97,7 @@ class MySensorsSensor(mysensors.device.MySensorsEntity):
             and set_req.V_UNIT_PREFIX in self._values
         ):
             return self._values[set_req.V_UNIT_PREFIX]
-        unit, _ = self._get_sensor_type()
+        unit = self._get_sensor_type()[0]
         return unit
 
     def _get_sensor_type(self):

@@ -13,12 +13,14 @@ from homeassistant.const import (
     DEVICE_CLASS_TEMPERATURE,
     DEVICE_CLASS_TIMESTAMP,
     ENERGY_KILO_WATT_HOUR,
+    LIGHT_LUX,
     MASS_KILOGRAMS,
     PERCENTAGE,
     POWER_WATT,
     TEMP_CELSIUS,
     TEMP_FAHRENHEIT,
     VOLT,
+    VOLUME_CUBIC_METERS,
 )
 
 from . import SmartThingsEntity
@@ -115,8 +117,14 @@ CAPABILITY_TO_SENSORS = {
             None,
         )
     ],
+    Capability.gas_meter: [
+        Map(Attribute.gas_meter, "Gas Meter", ENERGY_KILO_WATT_HOUR, None),
+        Map(Attribute.gas_meter_calorific, "Gas Meter Calorific", None, None),
+        Map(Attribute.gas_meter_time, "Gas Meter Time", None, DEVICE_CLASS_TIMESTAMP),
+        Map(Attribute.gas_meter_volume, "Gas Meter Volume", VOLUME_CUBIC_METERS, None),
+    ],
     Capability.illuminance_measurement: [
-        Map(Attribute.illuminance, "Illuminance", "lux", DEVICE_CLASS_ILLUMINANCE)
+        Map(Attribute.illuminance, "Illuminance", LIGHT_LUX, DEVICE_CLASS_ILLUMINANCE)
     ],
     Capability.infrared_level: [
         Map(Attribute.infrared_level, "Infrared Level", PERCENTAGE, None)
@@ -227,7 +235,10 @@ CAPABILITY_TO_SENSORS = {
         )
     ],
     Capability.three_axis: [],
-    Capability.tv_channel: [Map(Attribute.tv_channel, "Tv Channel", None, None)],
+    Capability.tv_channel: [
+        Map(Attribute.tv_channel, "Tv Channel", None, None),
+        Map(Attribute.tv_channel_name, "Tv Channel Name", None, None),
+    ],
     Capability.tvoc_measurement: [
         Map(
             Attribute.tvoc_level,

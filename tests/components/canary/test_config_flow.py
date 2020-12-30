@@ -18,6 +18,8 @@ from homeassistant.setup import async_setup_component
 
 from . import USER_INPUT, _patch_async_setup, _patch_async_setup_entry, init_integration
 
+from tests.async_mock import patch
+
 
 async def test_user_form(hass, canary_config_flow):
     """Test we get the user initiated form."""
@@ -101,9 +103,11 @@ async def test_user_form_single_instance_allowed(hass, canary_config_flow):
     assert result["reason"] == "single_instance_allowed"
 
 
-async def test_options_flow(hass):
+async def test_options_flow(hass, canary):
     """Test updating options."""
-    entry = await init_integration(hass, skip_entry_setup=True)
+    with patch("homeassistant.components.canary.PLATFORMS", []):
+        entry = await init_integration(hass)
+
     assert entry.options[CONF_FFMPEG_ARGUMENTS] == DEFAULT_FFMPEG_ARGUMENTS
     assert entry.options[CONF_TIMEOUT] == DEFAULT_TIMEOUT
 
@@ -111,10 +115,12 @@ async def test_options_flow(hass):
     assert result["type"] == RESULT_TYPE_FORM
     assert result["step_id"] == "init"
 
-    result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={CONF_FFMPEG_ARGUMENTS: "-v", CONF_TIMEOUT: 7},
-    )
+    with _patch_async_setup(), _patch_async_setup_entry():
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"],
+            user_input={CONF_FFMPEG_ARGUMENTS: "-v", CONF_TIMEOUT: 7},
+        )
+        await hass.async_block_till_done()
 
     assert result["type"] == RESULT_TYPE_CREATE_ENTRY
     assert result["data"][CONF_FFMPEG_ARGUMENTS] == "-v"
